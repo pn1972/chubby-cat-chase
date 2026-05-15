@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chubby Cat Chase — Cozy Edition</title>
+  <style>
+    :root {
+      --cream: #fff8ec;
+      --pink: #fde9e9;
+      --sky: #eaf8ff;
+      --stone: #4f463f;
+      --rose: #f46d89;
+      --orange: #f3a64b;
+      --mint: #72c7a1;
+      --blue: #7bb7e8;
+      --card: rgba(255, 255, 255, 0.74);
+      --shadow: 0 16px 40px rgba(80, 50, 30, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--stone);
+      background: var(--cream);
+      touch-action: none;
+      user-select: none;
+    }
+
+    #app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(255,255,255,0.95), transparent 28%),
+        radial-gradient(circle at 84% 26%, rgba(255,236,210,0.85), transparent 30%),
+        linear-gradient(135deg, var(--cream) 0%, var(--pink) 48%, var(--sky) 100%);
+    }
+
+    .glow-floor {
+      position: absolute;
+      left: 50%;
+      top: 57%;
+      width: min(760px, 92vw);
+      height: min(420px, 55vh);
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      filter: blur(28px);
+      pointer-events: none;
+    }
+
+    .decor {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.45;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
+      animation: floaty 4.8s ease-in-out infinite;
+    }
+
+    .d1 { left: 8%; top: 76%; font-size: 52px; animation-delay: -0.6s; }
+    .d2 { left: 84%; top: 20%; font-size: 42px; animation-delay: -1.2s; }
+    .d3 { left: 18%; top: 18%; font-size: 34px; animation-delay: -1.7s; }
+    .d4 { left: 73%; top: 72%; font-size: 34px; animation-delay: -2.2s; }
+    .d5 { left: 88%; top: 84%; font-size: 34px; animation-delay: -2.8s; }
+    .d6 { left: 28%; top: 82%; font-size: 30px; animation-delay: -3.1s; }
+    .d7 { left: 68%; top: 16%; font-size: 26px; animation-delay: -3.6s; }
+
+    .unlock-decor {
+      display: none;
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.72;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,0.08));
+      animation: floaty 5.2s ease-in-out infinite;
+    }
+    .unlock-decor.show { display: block; }
+    #unlockPillow { left: 11%; top: 57%; font-size: 56px; }
+    #unlockBox { right: 10%; top: 55%; font-size: 58px; animation-delay: -1.3s; }
+    #unlockRainbow { left: 50%; top: 11%; transform: translateX(-50%); font-size: 46px; animation-delay: -2.2s; }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0) rotate(-7deg); }
+      50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .topbar {
+      position: fixed;
+      z-index: 50;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .panel, .stat-card, .bottom-panel, .pause-card, .collection-card {
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.72);
+    }
+
+    .panel {
+      border-radius: 24px;
+      padding: 13px 18px;
+      min-width: min(360px, calc(100vw - 150px));
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 950;
+      letter-spacing: 0.01em;
+    }
+
+    .status {
+      margin-top: 3px;
+      font-size: 13px;
+      color: rgba(79,70,63,0.68);
+      font-weight: 750;
+    }
+
+    .mood-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      color: #7b6253;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    button {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 17px;
+      background: rgba(255,255,255,0.78);
+      box-shadow: var(--shadow);
+      color: var(--stone);
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease;
+    }
+
+    button:hover { transform: translateY(-2px); background: white; }
+    button:active { transform: translateY(0); }
+
+    .stats {
+      position: fixed;
+      z-index: 46;
+      left: 20px;
+      top: 138px;
+      display: grid;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .stat-card {
+      min-width: 174px;
+      border-radius: 20px;
+      padding: 10px 13px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(79,70,63,0.55);
+    }
+
+    .stat-value {
+      margin-top: 2px;
+      font-size: 19px;
+      font-weight: 1000;
+      color: var(--stone);
+    }
+
+    .stat-value span { color: var(--rose); }
+
+    .collection-card {
+      position: fixed;
+      right: 20px;
+      top: 138px;
+      z-index: 46;
+      border-radius: 22px;
+      padding: 12px 14px;
+      width: 198px;
+      pointer-events: none;
+    }
+
+    .collection-title {
+      font-size: 12px;
+      font-weight: 1000;
+      color: rgba(79,70,63,0.6);
+    }
+
+    .collection-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .badge {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.6);
+      filter: grayscale(1);
+      opacity: 0.36;
+      font-size: 19px;
+    }
+    .badge.unlocked {
+      filter: none;
+      opacity: 1;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 8px 20px rgba(80, 50, 30, 0.12);
+    }
+
+    .bottom-panel {
+      position: fixed;
+      z-index: 45;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    #score, #survive, #cutePoint { color: var(--rose); font-size: 18px; }
+
+    .cat {
+      position: fixed;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      will-change: transform;
+      transform-origin: center center;
+    }
+
+    #chubbyCat {
+      z-index: 20;
+      width: clamp(285px, 33vw, 380px);
+      height: clamp(285px, 33vw, 380px);
+      filter: drop-shadow(0 18px 24px rgba(70,45,35,0.18));
+    }
+
+    #smallCat {
+      z-index: 30;
+      width: clamp(94px, 11vw, 124px);
+      height: clamp(94px, 11vw, 124px);
+      filter: drop-shadow(0 12px 15px rgba(70,45,35,0.16));
+    }
+
+    #chubbySvg, #smallSvg { width: 100%; height: 100%; overflow: visible; }
+
+    .chubby-body {
+      transform-origin: 180px 250px;
+      animation: breathe 2.9s ease-in-out infinite;
+    }
+
+    .small-body {
+      transform-origin: 65px 94px;
+      animation: tiny-breathe 1.8s ease-in-out infinite;
+    }
+
+    .small-tail {
+      transform-origin: 98px 87px;
+      animation: tail 1.7s ease-in-out infinite;
+    }
+
+    .small-bow { display: none; }
+    .small-bow.show { display: block; }
+    .small-collar { display: none; }
+    .small-collar.show { display: block; }
+
+    .paw-left { transform-origin: 136px 250px; transition: transform 0.18s ease; }
+    .paw-right { transform-origin: 224px 250px; transition: transform 0.18s ease; }
+    .chubby-face { transition: transform 0.12s linear; }
+
+    @keyframes breathe {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.985); }
+    }
+
+    @keyframes tiny-breathe {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.98); }
+    }
+
+    @keyframes tail {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(8deg); }
+    }
+
+    .ready .paw-left { transform: rotate(-22deg) translateY(-9px); }
+    .ready .paw-right { transform: rotate(18deg) translateY(-7px); }
+    .pounce .paw-left { transform: rotate(-30deg) translateY(-16px); }
+    .pounce .paw-right { transform: rotate(27deg) translateY(-14px); }
+
+    .catch-pulse .chubby-body { animation: catchSquish 0.43s ease-out 1; }
+
+    @keyframes catchSquish {
+      0% { transform: scale(1); }
+      30% { transform: scaleX(1.08) scaleY(0.92); }
+      65% { transform: scaleX(0.98) scaleY(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .running .small-body { animation: runSquish 0.27s ease-in-out infinite; }
+    .running .small-tail { animation: runTail 0.35s ease-in-out infinite; }
+
+    @keyframes runSquish {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(-4px) scaleY(0.92); }
+    }
+
+    @keyframes runTail {
+      0%, 100% { transform: rotate(-8deg); }
+      50% { transform: rotate(13deg); }
+    }
+
+    .escaping .small-body { animation: escapeBounce 0.48s ease-out 1; }
+
+    @keyframes escapeBounce {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.2); }
+      70% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .trail {
+      position: fixed;
+      z-index: 25;
+      width: 58px;
+      height: 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .trail.active { opacity: 1; }
+
+    .item {
+      position: fixed;
+      z-index: 24;
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      font-size: 32px;
+      pointer-events: none;
+      animation: itemPulse 1.8s ease-in-out infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    .item::after {
+      content: "";
+      position: absolute;
+      inset: -7px;
+      border-radius: 28px;
+      border: 2px dashed rgba(244,109,137,0.28);
+      animation: spin 5s linear infinite;
+    }
+
+    @keyframes itemPulse {
+      0%, 100% { scale: 1; }
+      50% { scale: 1.08; }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .bubble, .achievement {
+      position: fixed;
+      z-index: 60;
+      pointer-events: none;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.88);
+      color: #e95776;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 950;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      animation: popText 2.6s ease-out forwards;
+      white-space: nowrap;
+    }
+
+    .achievement {
+      left: 50%;
+      top: 102px;
+      color: #6b5b47;
+      padding: 12px 18px;
+      border: 2px solid rgba(255,205,94,0.7);
+      background: rgba(255,250,229,0.92);
+      animation: achievementPop 3.2s ease-out forwards;
+    }
+
+    @keyframes popText {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.72) rotate(-8deg); }
+      15% { opacity: 1; transform: translate(-50%, -16px) scale(1.03) rotate(3deg); }
+      78% { opacity: 1; transform: translate(-50%, -24px) scale(1) rotate(2deg); }
+      100% { opacity: 0; transform: translate(-50%, -70px) scale(0.78) rotate(5deg); }
+    }
+
+    @keyframes achievementPop {
+      0% { opacity: 0; transform: translate(-50%, -20px) scale(0.78); }
+      12%, 80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -26px) scale(0.9); }
+    }
+
+    .snore-bubble {
+      display: none;
+      position: fixed;
+      z-index: 41;
+      pointer-events: none;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      color: #6f6760;
+      padding: 8px 14px;
+      font-size: 15px;
+      font-weight: 950;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      animation: snoreFloat 1.8s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    .snore-bubble.show { display: block; }
+
+    .sleeping .chubby-body { animation: sleepyBreathe 3.2s ease-in-out infinite; }
+    .sleeping .paw-left { transform: rotate(-5deg) translateY(2px); }
+    .sleeping .paw-right { transform: rotate(5deg) translateY(2px); }
+
+    @keyframes snoreFloat {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0) scale(1); opacity: 0.72; }
+      50% { transform: translate(-50%, -50%) translateY(-9px) scale(1.06); opacity: 1; }
+    }
+
+    @keyframes sleepyBreathe {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.975); }
+    }
+
+    .pause-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 42;
+      place-items: center;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .pause-overlay.show { display: grid; }
+
+    .pause-card {
+      border-radius: 32px;
+      padding: 28px 36px;
+      text-align: center;
+    }
+
+    .pause-card h2 { margin: 0; font-size: 26px; }
+    .pause-card p { margin: 8px 0 0; color: rgba(79,70,63,0.65); font-weight: 650; }
+
+    .hint {
+      position: fixed;
+      right: 24px;
+      bottom: 90px;
+      z-index: 35;
+      color: rgba(79,70,63,0.42);
+      font-size: 13px;
+      font-weight: 850;
+      pointer-events: none;
+    }
+
+    @media (max-width: 760px) {
+      .topbar { top: 12px; left: 12px; right: 12px; }
+      .panel { padding: 11px 14px; min-width: 0; flex: 1; }
+      .title { font-size: 13px; }
+      .status, .mood-pill { font-size: 11px; }
+      button { width: 40px; height: 40px; border-radius: 15px; font-size: 18px; }
+      .controls { gap: 6px; }
+      .stats { left: 12px; top: auto; bottom: 72px; grid-template-columns: repeat(2, minmax(0, 1fr)); width: calc(100vw - 24px); }
+      .stat-card { min-width: 0; padding: 8px 11px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 16px; }
+      .collection-card { display: none; }
+      .bottom-panel { bottom: 14px; width: calc(100vw - 24px); font-size: 12px; padding: 11px 12px; }
+      .hint { display: none; }
+      .achievement { top: 86px; max-width: calc(100vw - 28px); white-space: normal; text-align: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" aria-label="Chubby Cat Chase cozy interactive web app">
+    <div class="glow-floor"></div>
+    <div class="decor d1">🧶</div>
+    <div class="decor d2">🐟</div>
+    <div class="decor d3">✨</div>
+    <div class="decor d4">💛</div>
+    <div class="decor d5">⭐</div>
+    <div class="decor d6">🐾</div>
+    <div class="decor d7">🐾</div>
+    <div id="unlockPillow" class="unlock-decor">🛏️</div>
+    <div id="unlockBox" class="unlock-decor">📦</div>
+    <div id="unlockRainbow" class="unlock-decor">🌈</div>
+
+    <header class="topbar">
+      <section class="panel" aria-live="polite">
+        <div class="title">💗 Chubby Cat Chase — Cozy Edition</div>
+        <div id="status" class="status">เล่นกับน้องแมวสิ</div>
+        <div id="moodPill" class="mood-pill">😺 Mood: ซนกำลังดี</div>
+      </section>
+      <nav class="controls" aria-label="Game controls">
+        <button id="soundBtn" type="button" aria-label="เปิดเสียง">🔇</button>
+        <button id="musicBtn" type="button" aria-label="เปิดเพลงพื้นหลัง" title="Background music">🎵</button>
+        <button id="pauseBtn" type="button" aria-label="หยุดชั่วคราว">⏸️</button>
+        <button id="resetBtn" type="button" aria-label="เริ่มใหม่">↻</button>
+      </nav>
+    </header>
+
+    <section class="stats" aria-live="polite">
+      <div class="stat-card"><div class="stat-label">รอดจากอุ้งเท้า</div><div class="stat-value"><span id="survive">0</span> วิ</div></div>
+      <div class="stat-card"><div class="stat-label">ความน่ารัก</div><div class="stat-value"><span id="cutePoint">0</span> แต้ม</div></div>
+      <div class="stat-card"><div class="stat-label">โดนกอด</div><div class="stat-value"><span id="score">0</span> ครั้ง</div></div>
+      <div class="stat-card"><div class="stat-label">ของเล่นที่เก็บ</div><div class="stat-value"><span id="itemCount">0</span> ชิ้น</div></div>
+    </section>
+
+    <aside class="collection-card">
+      <div class="collection-title">ของตกแต่งที่ปลดล็อก</div>
+      <div class="collection-row">
+        <span id="badgeBow" class="badge" title="โบว์น้องเทา">🎀</span>
+        <span id="badgeCollar" class="badge" title="ปลอกคอหัวใจ">💗</span>
+        <span id="badgePillow" class="badge" title="หมอนพักพุง">🛏️</span>
+        <span id="badgeBox" class="badge" title="กล่องลับแมว">📦</span>
+        <span id="badgeRainbow" class="badge" title="ฉากสายรุ้ง">🌈</span>
+      </div>
+    </aside>
+
+    <section class="bottom-panel">
+      เก็บของเล่น · หลบอุ้งเท้า · สะสมความน่ารัก · ไม่มี Game Over มีแต่โดนกอด 🐾
+    </section>
+
+    <div id="chubbyCat" class="cat" aria-hidden="true">
+      <svg id="chubbySvg" viewBox="0 0 360 360">
+        <defs>
+          <radialGradient id="fur" cx="46%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#b7ad93" />
+            <stop offset="62%" stop-color="#756f60" />
+            <stop offset="100%" stop-color="#4e4a42" />
+          </radialGradient>
+          <radialGradient id="cream" cx="50%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#fff9e9" />
+            <stop offset="100%" stop-color="#efe3c5" />
+          </radialGradient>
+        </defs>
+        <g class="chubby-body">
+          <path d="M78 104 C70 46 105 18 137 65 C151 58 166 55 181 55 C198 55 213 58 228 66 C259 18 292 48 282 106 C312 139 329 187 318 250 C308 313 257 337 183 337 C108 337 58 314 47 253 C36 190 48 137 78 104 Z" fill="url(#fur)" stroke="#4e453d" stroke-width="3" />
+          <path d="M88 100 C88 59 104 45 128 74 C112 76 99 84 88 100 Z" fill="#f5b5a8" opacity="0.72" />
+          <path d="M272 100 C272 59 256 45 232 74 C248 76 261 84 272 100 Z" fill="#f5b5a8" opacity="0.72" />
+          <path d="M92 190 C106 150 137 128 180 128 C224 128 255 151 268 190 C254 245 224 276 181 276 C136 276 106 245 92 190 Z" fill="url(#cream)" opacity="0.96" />
+          <path d="M95 238 C121 283 147 313 180 313 C214 313 240 283 266 238 C269 293 233 326 181 327 C128 326 92 293 95 238 Z" fill="#fff5df" opacity="0.82" />
+          <path d="M147 64 C146 91 139 118 124 144" fill="none" stroke="#2f302c" stroke-width="8" stroke-linecap="round" opacity="0.6" />
+          <path d="M179 58 C181 92 180 114 176 137" fill="none" stroke="#2f302c" stroke-width="8" stroke-linecap="round" opacity="0.55" />
+          <path d="M216 67 C212 92 218 116 233 143" fill="none" stroke="#2f302c" stroke-width="8" stroke-linecap="round" opacity="0.58" />
+          <path d="M66 148 C93 145 112 150 128 163" fill="none" stroke="#2f302c" stroke-width="9" stroke-linecap="round" opacity="0.65" />
+          <path d="M294 148 C267 145 248 150 232 163" fill="none" stroke="#2f302c" stroke-width="9" stroke-linecap="round" opacity="0.65" />
+          <path d="M56 195 C87 187 113 189 136 202" fill="none" stroke="#2f302c" stroke-width="9" stroke-linecap="round" opacity="0.63" />
+          <path d="M304 195 C273 187 247 189 224 202" fill="none" stroke="#2f302c" stroke-width="9" stroke-linecap="round" opacity="0.63" />
+          <g class="chubby-face">
+            <g id="sleepyEyes">
+              <path d="M122 139 C132 150 148 151 159 139" fill="none" stroke="#2d2725" stroke-width="7" stroke-linecap="round" />
+              <path d="M202 139 C212 150 228 151 239 139" fill="none" stroke="#2d2725" stroke-width="7" stroke-linecap="round" />
+            </g>
+            <g id="openEyes" style="display:none">
+              <ellipse cx="137" cy="142" rx="11" ry="12" fill="#322c27" />
+              <ellipse cx="223" cy="142" rx="11" ry="12" fill="#322c27" />
+              <circle cx="141" cy="138" r="3" fill="#fff" opacity="0.9" />
+              <circle cx="227" cy="138" r="3" fill="#fff" opacity="0.9" />
+            </g>
+            <path d="M174 159 C178 164 184 164 188 159 C186 154 176 154 174 159 Z" fill="#8b4a42" />
+            <path d="M181 165 C179 174 169 178 159 176" fill="none" stroke="#553b35" stroke-width="4" stroke-linecap="round" />
+            <path d="M181 165 C183 174 193 178 203 176" fill="none" stroke="#553b35" stroke-width="4" stroke-linecap="round" />
+            <path d="M112 171 C86 166 69 163 51 163" fill="none" stroke="#6a5d54" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            <path d="M114 184 C88 184 67 190 52 199" fill="none" stroke="#6a5d54" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            <path d="M248 171 C274 166 291 163 309 163" fill="none" stroke="#6a5d54" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+            <path d="M246 184 C272 184 293 190 308 199" fill="none" stroke="#6a5d54" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+          </g>
+          <g class="paw-left">
+            <path d="M109 236 C124 217 151 221 162 244 C169 264 155 288 132 289 C103 289 91 258 109 236 Z" fill="#6b6558" stroke="#3f3b35" stroke-width="3" />
+            <path d="M126 251 C135 242 147 243 153 253" fill="none" stroke="#efe4c9" stroke-width="5" stroke-linecap="round" opacity="0.8" />
+          </g>
+          <g class="paw-right">
+            <path d="M251 236 C236 217 209 221 198 244 C191 264 205 288 228 289 C257 289 269 258 251 236 Z" fill="#6b6558" stroke="#3f3b35" stroke-width="3" />
+            <path d="M234 251 C225 242 213 243 207 253" fill="none" stroke="#efe4c9" stroke-width="5" stroke-linecap="round" opacity="0.8" />
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div id="snoreBubble" class="snore-bubble" aria-hidden="true">คร่อก... zZz</div>
+
+    <div id="smallCat" class="cat" aria-hidden="true">
+      <svg id="smallSvg" viewBox="0 0 130 130">
+        <defs>
+          <radialGradient id="smallFur" cx="42%" cy="35%" r="70%">
+            <stop offset="0%" stop-color="#f5f7f5" />
+            <stop offset="70%" stop-color="#aeb5b0" />
+            <stop offset="100%" stop-color="#626a64" />
+          </radialGradient>
+        </defs>
+        <g class="small-body">
+          <path d="M31 42 C28 18 45 12 56 31 C62 28 70 28 76 31 C87 12 104 18 99 43 C113 57 115 82 103 100 C91 119 39 119 27 100 C15 82 17 58 31 42 Z" fill="url(#smallFur)" stroke="#5f6763" stroke-width="2.4" />
+          <path d="M36 39 C37 26 45 24 52 34" fill="#d3d9d4" opacity="0.8" />
+          <path d="M94 39 C93 26 85 24 78 34" fill="#d3d9d4" opacity="0.8" />
+          <path d="M39 75 C46 65 55 60 65 60 C76 60 86 65 92 75 C89 94 78 103 65 103 C52 103 41 94 39 75 Z" fill="#eef2ed" opacity="0.86" />
+          <path d="M48 31 C50 43 49 52 45 59" stroke="#6e7772" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+          <path d="M65 29 C66 43 65 51 64 58" stroke="#6e7772" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+          <path d="M82 31 C80 43 81 52 85 59" stroke="#6e7772" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+          <g class="small-bow" id="smallBow">
+            <path d="M54 24 C43 14 36 24 45 33 C50 35 53 31 56 27 Z" fill="#ff7da1" stroke="#cb4c72" stroke-width="2" />
+            <path d="M76 24 C87 14 94 24 85 33 C80 35 77 31 74 27 Z" fill="#ff7da1" stroke="#cb4c72" stroke-width="2" />
+            <circle cx="65" cy="27" r="5" fill="#ffb4c8" stroke="#cb4c72" stroke-width="2" />
+          </g>
+          <g id="smallHappyEyes">
+            <path d="M42 62 C47 68 53 68 58 62" fill="none" stroke="#35231d" stroke-width="3.8" stroke-linecap="round" />
+            <path d="M72 62 C77 68 83 68 88 62" fill="none" stroke="#35231d" stroke-width="3.8" stroke-linecap="round" />
+          </g>
+          <g id="smallSurpriseEyes" style="display:none">
+            <circle cx="47" cy="62" r="6" fill="#35231d" />
+            <circle cx="83" cy="62" r="6" fill="#35231d" />
+            <text x="97" y="32" font-size="28" font-weight="900" fill="#ff7b7b">!</text>
+          </g>
+          <path d="M62 72 C64 75 67 75 69 72 C68 69 63 69 62 72 Z" fill="#915045" />
+          <path d="M65 77 C63 82 58 83 53 82" fill="none" stroke="#714338" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M65 77 C67 82 72 83 77 82" fill="none" stroke="#714338" stroke-width="2.5" stroke-linecap="round" />
+          <path class="small-collar" id="smallCollar" d="M44 87 C56 95 74 95 86 87" fill="none" stroke="#ff7da1" stroke-width="5" stroke-linecap="round" />
+          <path class="small-tail" d="M98 87 C126 86 126 55 106 57 C93 58 98 73 112 70" fill="none" stroke="#8d9690" stroke-width="9" stroke-linecap="round" />
+          <path d="M33 96 C41 105 52 108 65 108 C78 108 89 105 97 96" fill="none" stroke="#5f6763" stroke-width="4" stroke-linecap="round" opacity="0.55" />
+        </g>
+      </svg>
+    </div>
+
+    <div id="trail" class="trail"></div>
+    <div id="item" class="item" aria-hidden="true">🐟</div>
+    <div class="hint">เก็บปลา/ไหมพรม/กล่อง แล้วหลบอุ้งเท้าแมวอ้วน 🐾</div>
+
+    <div id="pauseOverlay" class="pause-overlay">
+      <div class="pause-card">
+        <h2>หยุดเล่นชั่วคราว</h2>
+        <p>กดปุ่ม Play เพื่อให้แมวกลับมาไล่จับต่อ</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const app = document.getElementById('app');
+    const chubbyEl = document.getElementById('chubbyCat');
+    const smallEl = document.getElementById('smallCat');
+    const trailEl = document.getElementById('trail');
+    const itemEl = document.getElementById('item');
+    const snoreBubble = document.getElementById('snoreBubble');
+    const statusEl = document.getElementById('status');
+    const moodPill = document.getElementById('moodPill');
+    const surviveEl = document.getElementById('survive');
+    const cutePointEl = document.getElementById('cutePoint');
+    const scoreEl = document.getElementById('score');
+    const itemCountEl = document.getElementById('itemCount');
+    const soundBtn = document.getElementById('soundBtn');
+    const musicBtn = document.getElementById('musicBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const pauseOverlay = document.getElementById('pauseOverlay');
+    const sleepyEyes = document.getElementById('sleepyEyes');
+    const openEyes = document.getElementById('openEyes');
+    const smallHappyEyes = document.getElementById('smallHappyEyes');
+    const smallSurpriseEyes = document.getElementById('smallSurpriseEyes');
+    const chubbyFace = document.querySelector('.chubby-face');
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const phrases = ['โดนกอดแล้ว!', 'จ๊ะเอ๋!', 'พุงนุ่มมาเอง!', 'น้องเทาเด้งหนี!', 'อุ้งเท้าอ้วนสำเร็จ!', 'จับได้แต่เบามาก!'];
+    const evadePhrases = ['หลบสวยมาก!', 'พุงตามไม่ทัน!', 'น้องเทาไวเกิน!', 'อุ้งเท้าพลาดเป้า!'];
+    const itemTypes = [
+      { icon: '🐟', name: 'ปลาทูน่า', points: 12, message: 'งับปลาทูน่า +12' },
+      { icon: '🧶', name: 'ไหมพรม', points: 10, message: 'ไหมพรมเบี่ยงเบนความสนใจ!' },
+      { icon: '📦', name: 'กล่อง', points: 14, message: 'ซ่อนในกล่อง +14' },
+      { icon: '💗', name: 'หัวใจ', points: 16, message: 'หัวใจฟู +16' },
+      { icon: '⭐', name: 'ดาว', points: 18, message: 'สปีดเหมียว +18' },
+      { icon: '🛏️', name: 'หมอน', points: 15, message: 'หมอนทำให้ง่วง +15' },
+    ];
+    const moods = [
+      { id: 'playful', label: '😺 Mood: ซนกำลังดี', speed: 1.0, catch: 105, message: 'แมวอ้วนคึกแล้ว!' },
+      { id: 'hungry', label: '🐟 Mood: หิวปลาทูน่า', speed: 1.12, catch: 112, message: 'แมวอ้วนหิวปลา!' },
+      { id: 'sleepy', label: '💤 Mood: ง่วงนิด ๆ', speed: 0.72, catch: 92, message: 'แมวอ้วนเริ่มง่วง...' },
+      { id: 'cuddly', label: '💗 Mood: อยากกอด', speed: 0.9, catch: 122, message: 'แมวอ้วนอยากกอดน้องเทา' },
+    ];
+
+    let paused = false;
+    let muted = true;
+    let musicOn = false;
+    let musicContext = null;
+    let musicGain = null;
+    let musicTimer = null;
+    let musicStep = 0;
+    let hugs = 0;
+    let cutePoints = 0;
+    let itemsCollected = 0;
+    let bestSurvive = 0;
+    let surviveStart = performance.now();
+    let lastCatchTime = 0;
+    let escapingUntil = 0;
+    let lastSmallMoveTime = performance.now();
+    let lastEvadePraise = 0;
+    let currentMood = moods[0];
+    let nextMoodTime = performance.now() + 18000;
+    let unlocked = new Set();
+
+    const pointer = { x: window.innerWidth * 0.67, y: window.innerHeight * 0.33 };
+    const small = { x: pointer.x, y: pointer.y, lastX: pointer.x, lastY: pointer.y, vx: 0, vy: 0, speed: 0, direction: 0, speedBoostUntil: 0 };
+    const chubby = { x: window.innerWidth / 2, y: window.innerHeight * 0.64 };
+    let item = randomItem();
+
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+    function lerp(start, end, amount) { return start + (end - start) * amount; }
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function angleBetween(a, b) { return Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; }
+
+    function randomItem() {
+      const type = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+      return {
+        type,
+        x: clamp(90 + Math.random() * (window.innerWidth - 180), 80, window.innerWidth - 80),
+        y: clamp(115 + Math.random() * (window.innerHeight - 240), 95, window.innerHeight - 100),
+      };
+    }
+
+    function renderItem() {
+      itemEl.textContent = item.type.icon;
+      itemEl.style.left = item.x + 'px';
+      itemEl.style.top = item.y + 'px';
+    }
+
+    function setPointer(x, y) {
+      const wasSleeping = performance.now() - lastSmallMoveTime > 5000;
+      pointer.x = clamp(x, 42, window.innerWidth - 42);
+      pointer.y = clamp(y, 42, window.innerHeight - 42);
+      lastSmallMoveTime = performance.now();
+      if (wasSleeping) {
+        showBubble(chubby.x, chubby.y - 180, 'สะดุ้งตื่นเหมียว!');
+        unlockAchievement('ปลุกแมวอ้วน', 'ทำให้แมวอ้วนตื่นหลังหลับ');
+      }
+    }
+
+    function onPointerMove(event) {
+      const point = event.touches ? event.touches[0] : event;
+      if (!point) return;
+      setPointer(point.clientX, point.clientY);
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('resize', () => {
+      chubby.x = window.innerWidth / 2;
+      chubby.y = window.innerHeight * 0.64;
+      setPointer(window.innerWidth * 0.67, window.innerHeight * 0.33);
+      item = randomItem();
+      renderItem();
+    });
+
+    function setupMusicContext() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return false;
+      if (!musicContext) {
+        musicContext = new AudioContext();
+        musicGain = musicContext.createGain();
+        musicGain.gain.value = 0.035;
+        musicGain.connect(musicContext.destination);
+      }
+      if (musicContext.state === 'suspended') musicContext.resume();
+      return true;
+    }
+
+    function playMusicTone(freq, startTime, duration, type = 'triangle', volume = 0.06) {
+      if (!musicContext || !musicGain || !musicOn) return;
+      const osc = musicContext.createOscillator();
+      const gain = musicContext.createGain();
+      const filter = musicContext.createBiquadFilter();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, startTime);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1800, startTime);
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(musicGain);
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.02);
+    }
+
+    function musicTick() {
+      if (!musicOn || !musicContext) return;
+      const now = musicContext.currentTime;
+      const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46, 659.25, 783.99, 987.77, 783.99, 698.46, 659.25, 587.33, 523.25];
+      const note = melody[musicStep % melody.length];
+      playMusicTone(note, now, 0.18, 'triangle', 0.048);
+      if (musicStep % 4 === 0) playMusicTone(note / 2, now, 0.35, 'sine', 0.032);
+      if (musicStep % 8 === 6) playMusicTone(note * 1.5, now + 0.08, 0.12, 'sine', 0.026);
+      musicStep += 1;
+    }
+
+    function startBackgroundMusic() {
+      if (!setupMusicContext()) return;
+      musicOn = true;
+      musicBtn.textContent = '🎶';
+      musicBtn.setAttribute('aria-label', 'ปิดเพลงพื้นหลัง');
+      musicBtn.title = 'Background music: on';
+      musicTick();
+      musicTimer = setInterval(musicTick, 245);
+    }
+
+    function stopBackgroundMusic() {
+      musicOn = false;
+      musicBtn.textContent = '🎵';
+      musicBtn.setAttribute('aria-label', 'เปิดเพลงพื้นหลัง');
+      musicBtn.title = 'Background music: off';
+      if (musicTimer) clearInterval(musicTimer);
+      musicTimer = null;
+    }
+
+    function tinySound(type = 'boop') {
+      if (muted) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        function playMeow(startTime, startFreq, midFreq, endFreq) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const filter = ctx.createBiquadFilter();
+          osc.type = 'triangle';
+          filter.type = 'bandpass';
+          filter.frequency.setValueAtTime(1200, startTime);
+          filter.frequency.linearRampToValueAtTime(850, startTime + 0.28);
+          filter.Q.setValueAtTime(5.5, startTime);
+          osc.frequency.setValueAtTime(startFreq, startTime);
+          osc.frequency.exponentialRampToValueAtTime(midFreq, startTime + 0.11);
+          osc.frequency.exponentialRampToValueAtTime(endFreq, startTime + 0.28);
+          gain.gain.setValueAtTime(0.0001, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.19, startTime + 0.035);
+          gain.gain.linearRampToValueAtTime(0.12, startTime + 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.34);
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.36);
+        }
+        if (type === 'meow') {
+          playMeow(ctx.currentTime, 820, 520, 360);
+          playMeow(ctx.currentTime + 0.38, 760, 500, 340);
+          return;
+        }
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(type === 'sparkle' ? 980 : 760, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(type === 'sparkle' ? 1320 : 420, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.22);
+      } catch (error) {}
+    }
+
+    function showBubble(x, y, text) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      bubble.style.left = x + 'px';
+      bubble.style.top = y + 'px';
+      app.appendChild(bubble);
+      setTimeout(() => bubble.remove(), 2700);
+    }
+
+    function showAchievement(text, subtext) {
+      const old = app.querySelector('.achievement');
+      if (old) old.remove();
+      const el = document.createElement('div');
+      el.className = 'achievement';
+      el.innerHTML = `🏆 ${text}<br><span style="font-size:12px;font-weight:800;color:rgba(79,70,63,.62)">${subtext}</span>`;
+      app.appendChild(el);
+      setTimeout(() => el.remove(), 3300);
+      tinySound('sparkle');
+    }
+
+    function unlockAchievement(name, detail) {
+      const key = 'achieve:' + name;
+      if (unlocked.has(key)) return;
+      unlocked.add(key);
+      showAchievement(name, detail);
+    }
+
+    function unlockDecoration(key, name, detail) {
+      if (unlocked.has(key)) return;
+      unlocked.add(key);
+      showAchievement('ปลดล็อก: ' + name, detail);
+      const badge = document.getElementById('badge' + key[0].toUpperCase() + key.slice(1));
+      if (badge) badge.classList.add('unlocked');
+      if (key === 'bow') document.getElementById('smallBow').classList.add('show');
+      if (key === 'collar') document.getElementById('smallCollar').classList.add('show');
+      if (key === 'pillow') document.getElementById('unlockPillow').classList.add('show');
+      if (key === 'box') document.getElementById('unlockBox').classList.add('show');
+      if (key === 'rainbow') document.getElementById('unlockRainbow').classList.add('show');
+    }
+
+    function addCutePoints(points) {
+      cutePoints += points;
+      cutePointEl.textContent = cutePoints;
+      if (cutePoints >= 30) unlockDecoration('bow', 'โบว์น้องเทา', 'ความน่ารักครบ 30 แต้ม');
+      if (cutePoints >= 60) unlockDecoration('collar', 'ปลอกคอหัวใจ', 'ความน่ารักครบ 60 แต้ม');
+      if (cutePoints >= 95) unlockDecoration('pillow', 'หมอนพักพุง', 'ความน่ารักครบ 95 แต้ม');
+      if (cutePoints >= 135) unlockDecoration('box', 'กล่องลับแมว', 'ความน่ารักครบ 135 แต้ม');
+      if (cutePoints >= 180) unlockDecoration('rainbow', 'ฉากสายรุ้ง', 'ความน่ารักครบ 180 แต้ม');
+    }
+
+    function collectItem() {
+      itemsCollected += 1;
+      itemCountEl.textContent = itemsCollected;
+      addCutePoints(item.type.points);
+      showBubble(item.x, item.y - 30, item.type.message);
+      tinySound('sparkle');
+
+      if (item.type.icon === '⭐') small.speedBoostUntil = performance.now() + 4500;
+      if (item.type.icon === '🧶') nextMoodTime = performance.now() + 8000;
+      if (item.type.icon === '🛏️') lastSmallMoveTime = Math.min(lastSmallMoveTime, performance.now() - 2600);
+
+      if (itemsCollected === 5) unlockAchievement('ทาสแมวมือไว', 'เก็บของเล่นครบ 5 ชิ้น');
+      if (itemsCollected === 10) unlockAchievement('นักสะสมอุ้งเท้า', 'เก็บของเล่นครบ 10 ชิ้น');
+      item = randomItem();
+      renderItem();
+    }
+
+    function triggerCatch(now) {
+      lastCatchTime = now;
+      hugs += 1;
+      scoreEl.textContent = hugs;
+      surviveStart = now;
+      chubbyEl.classList.add('catch-pulse');
+      smallEl.classList.add('escaping');
+      escapingUntil = now + 520;
+      setTimeout(() => chubbyEl.classList.remove('catch-pulse'), 440);
+      setTimeout(() => smallEl.classList.remove('escaping'), 520);
+
+      const awayAngle = Math.atan2(small.y - chubby.y, small.x - chubby.x);
+      const jump = Math.min(window.innerWidth, window.innerHeight) * 0.22;
+      const newTarget = {
+        x: clamp(small.x + Math.cos(awayAngle) * jump + (Math.random() - 0.5) * 90, 70, window.innerWidth - 70),
+        y: clamp(small.y + Math.sin(awayAngle) * jump + (Math.random() - 0.5) * 90, 70, window.innerHeight - 70),
+      };
+      pointer.x = newTarget.x;
+      pointer.y = newTarget.y;
+      small.x = lerp(small.x, newTarget.x, 0.34);
+      small.y = lerp(small.y, newTarget.y, 0.34);
+
+      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+      showBubble(chubby.x, chubby.y - 180, phrase);
+      tinySound('meow');
+      if (hugs === 5) unlockAchievement('พุงนุ่มพิฆาต', 'โดนกอดครบ 5 ครั้ง');
+      if (hugs === 10) unlockAchievement('ยอมให้กอดระดับโปร', 'โดนกอดครบ 10 ครั้ง');
+    }
+
+    function rotateMood(now) {
+      if (now < nextMoodTime) return;
+      const pool = moods.filter(m => m.id !== currentMood.id);
+      currentMood = pool[Math.floor(Math.random() * pool.length)];
+      moodPill.textContent = currentMood.label;
+      showBubble(chubby.x, chubby.y - 180, currentMood.message);
+      nextMoodTime = now + 18000 + Math.random() * 9000;
+    }
+
+    function updateUI(state, angle, faceShift, now) {
+      chubbyEl.classList.toggle('ready', state === 'ready');
+      chubbyEl.classList.toggle('pounce', state === 'pounce');
+      chubbyEl.classList.toggle('sleeping', state === 'sleeping');
+      smallEl.classList.toggle('running', small.speed > 7);
+      trailEl.classList.toggle('active', small.speed > 7);
+
+      const eyeOpen = state === 'close' || state === 'ready' || state === 'pounce';
+      sleepyEyes.style.display = eyeOpen ? 'none' : '';
+      openEyes.style.display = eyeOpen ? '' : 'none';
+
+      const escaping = now < escapingUntil;
+      smallHappyEyes.style.display = escaping ? 'none' : '';
+      smallSurpriseEyes.style.display = escaping ? '' : 'none';
+      chubbyFace.style.transform = `translateX(${faceShift}px)`;
+      snoreBubble.classList.toggle('show', state === 'sleeping');
+
+      if (state === 'sleeping') statusEl.textContent = 'แมวอ้วนหลับคร่อก... zZz';
+      else if (state === 'pounce') statusEl.textContent = 'แมวอ้วนกำลังตะปบ!';
+      else if (state === 'ready') statusEl.textContent = 'เตรียมจับน้องเทา';
+      else if (state === 'close') statusEl.textContent = 'กำลังมองตาม... ระวังอุ้งเท้า';
+      else statusEl.textContent = 'เก็บของเล่น แล้วหนีอุ้งเท้าแมวอ้วน';
+    }
+
+    function positionElement(el, x, y, rotation = 0, scale = 1) {
+      el.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg) scale(${scale})`;
+    }
+
+    function animate(now) {
+      if (!paused) {
+        rotateMood(now);
+
+        small.lastX = small.x;
+        small.lastY = small.y;
+        const boost = now < small.speedBoostUntil ? 1.45 : 1;
+        const smallEase = (reducedMotion ? 0.22 : 0.135) * boost;
+        small.x = lerp(small.x, pointer.x, clamp(smallEase, 0.08, 0.28));
+        small.y = lerp(small.y, pointer.y, clamp(smallEase, 0.08, 0.28));
+        small.vx = small.x - small.lastX;
+        small.vy = small.y - small.lastY;
+        small.speed = Math.hypot(small.vx, small.vy);
+        small.direction = Math.atan2(small.vy, small.vx || 0.001) * 180 / Math.PI;
+
+        const isSleeping = now - lastSmallMoveTime > 5000;
+        const center = { x: window.innerWidth / 2, y: window.innerHeight * 0.64 };
+        const d = dist(small, chubby);
+        const angle = angleBetween(chubby, small);
+        const maxChase = Math.min(window.innerWidth, window.innerHeight) * 0.34;
+        const moodSpeed = currentMood.speed;
+        const chaseStrength = isSleeping ? 0.014 : (d < 155 ? 0.068 : d < 330 ? 0.04 : d < 620 ? 0.022 : 0.01) * moodSpeed;
+        const closenessBoost = d < 170 ? 1.12 : d < 330 ? 0.92 : 0.72;
+        const pouncePull = d < 180 ? 0.28 : d < 300 ? 0.16 : 0.06;
+        const desiredChubby = isSleeping
+          ? center
+          : {
+              x: center.x
+                + clamp((small.x - center.x) * 0.62 * closenessBoost, -maxChase, maxChase)
+                + clamp((small.x - chubby.x) * pouncePull, -90, 90),
+              y: center.y
+                + clamp((small.y - center.y) * 0.43 * closenessBoost, -maxChase * 0.92, maxChase * 0.78)
+                + clamp((small.y - chubby.y) * pouncePull, -65, 65),
+            };
+        chubby.x = lerp(chubby.x, desiredChubby.x, chaseStrength);
+        chubby.y = lerp(chubby.y, desiredChubby.y, chaseStrength);
+
+        let state = 'idle';
+        if (isSleeping) state = 'sleeping';
+        else if (d < 135) state = 'pounce';
+        else if (d < 255) state = 'ready';
+        else if (d < 430) state = 'close';
+
+        if (!isSleeping && d < currentMood.catch && now - lastCatchTime > 1200) triggerCatch(now);
+
+        if (dist(small, item) < 58) collectItem();
+
+        const survived = Math.floor((now - surviveStart) / 1000);
+        surviveEl.textContent = survived;
+        if (survived > bestSurvive) bestSurvive = survived;
+        if (survived === 10 && bestSurvive === 10) unlockAchievement('นักหลบอุ้งเท้า', 'รอดครบ 10 วินาที');
+        if (survived === 30 && bestSurvive === 30) unlockAchievement('นินจาเหมียวเทา', 'รอดครบ 30 วินาที');
+        if (state === 'ready' && now - lastEvadePraise > 6500) {
+          lastEvadePraise = now;
+          showBubble(small.x, small.y - 44, evadePhrases[Math.floor(Math.random() * evadePhrases.length)]);
+          addCutePoints(2);
+        }
+
+        const chubbyTurn = isSleeping ? 0 : clamp(angle / 5, -12, 12);
+        const faceShift = isSleeping ? 0 : clamp(angle / 10, -5, 5);
+        const smallRotate = clamp(small.direction / 8, -15, 15);
+        const chubbyScale = state === 'pounce' ? 1.08 : state === 'ready' ? 1.03 : 1;
+        positionElement(chubbyEl, chubby.x, chubby.y + (state === 'pounce' ? -8 : 0), chubbyTurn, chubbyScale);
+        positionElement(smallEl, small.x, small.y, smallRotate, 1);
+        trailEl.style.transform = `translate(-50%, -50%) translate3d(${small.x - 38}px, ${small.y}px, 0) rotate(${smallRotate}deg)`;
+        snoreBubble.style.left = (chubby.x + 118) + 'px';
+        snoreBubble.style.top = (chubby.y - 152) + 'px';
+
+        updateUI(state, angle, faceShift, now);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    soundBtn.addEventListener('click', () => {
+      muted = !muted;
+      soundBtn.textContent = muted ? '🔇' : '🔊';
+      soundBtn.setAttribute('aria-label', muted ? 'เปิดเสียง' : 'ปิดเสียง');
+      if (!muted) tinySound('meow');
+    });
+
+    musicBtn.addEventListener('click', () => {
+      if (musicOn) stopBackgroundMusic();
+      else startBackgroundMusic();
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      pauseBtn.textContent = paused ? '▶️' : '⏸️';
+      pauseBtn.setAttribute('aria-label', paused ? 'เล่นต่อ' : 'หยุดชั่วคราว');
+      pauseOverlay.classList.toggle('show', paused);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      hugs = 0;
+      cutePoints = 0;
+      itemsCollected = 0;
+      bestSurvive = 0;
+      surviveStart = performance.now();
+      lastSmallMoveTime = performance.now();
+      scoreEl.textContent = hugs;
+      cutePointEl.textContent = cutePoints;
+      itemCountEl.textContent = itemsCollected;
+      surviveEl.textContent = 0;
+      chubby.x = window.innerWidth / 2;
+      chubby.y = window.innerHeight * 0.64;
+      setPointer(window.innerWidth * 0.67, window.innerHeight * 0.33);
+      small.x = pointer.x;
+      small.y = pointer.y;
+      small.lastX = pointer.x;
+      small.lastY = pointer.y;
+      small.speedBoostUntil = 0;
+      currentMood = moods[0];
+      if (musicOn) {
+        stopBackgroundMusic();
+      }
+      nextMoodTime = performance.now() + 18000;
+      moodPill.textContent = currentMood.label;
+      unlocked.clear();
+      app.querySelectorAll('.bubble, .achievement').forEach(el => el.remove());
+      document.querySelectorAll('.badge').forEach(el => el.classList.remove('unlocked'));
+      document.getElementById('smallBow').classList.remove('show');
+      document.getElementById('smallCollar').classList.remove('show');
+      document.getElementById('unlockPillow').classList.remove('show');
+      document.getElementById('unlockBox').classList.remove('show');
+      document.getElementById('unlockRainbow').classList.remove('show');
+      chubbyEl.classList.remove('ready', 'pounce', 'catch-pulse', 'sleeping');
+      smallEl.classList.remove('running', 'escaping');
+      snoreBubble.classList.remove('show');
+      item = randomItem();
+      renderItem();
+      tinySound('sparkle');
+    });
+
+    renderItem();
+    positionElement(chubbyEl, chubby.x, chubby.y, 0, 1);
+    positionElement(smallEl, small.x, small.y, 0, 1);
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
