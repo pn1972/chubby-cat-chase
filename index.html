@@ -818,7 +818,7 @@
       if (!musicContext) {
         musicContext = new AudioContext();
         musicGain = musicContext.createGain();
-        musicGain.gain.value = 0.035;
+        musicGain.gain.value = 0.55;
         musicGain.connect(musicContext.destination);
       }
       if (musicContext.state === 'suspended') musicContext.resume();
@@ -849,20 +849,30 @@
       const now = musicContext.currentTime;
       const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46, 659.25, 783.99, 987.77, 783.99, 698.46, 659.25, 587.33, 523.25];
       const note = melody[musicStep % melody.length];
-      playMusicTone(note, now, 0.18, 'triangle', 0.048);
-      if (musicStep % 4 === 0) playMusicTone(note / 2, now, 0.35, 'sine', 0.032);
-      if (musicStep % 8 === 6) playMusicTone(note * 1.5, now + 0.08, 0.12, 'sine', 0.026);
+      playMusicTone(note, now, 0.2, 'triangle', 0.14);
+      if (musicStep % 4 === 0) playMusicTone(note / 2, now, 0.42, 'sine', 0.09);
+      if (musicStep % 8 === 6) playMusicTone(note * 1.5, now + 0.08, 0.16, 'sine', 0.08);
       musicStep += 1;
     }
 
     function startBackgroundMusic() {
       if (!setupMusicContext()) return;
-      musicOn = true;
-      musicBtn.textContent = '🎶';
-      musicBtn.setAttribute('aria-label', 'ปิดเพลงพื้นหลัง');
-      musicBtn.title = 'Background music: on';
-      musicTick();
-      musicTimer = setInterval(musicTick, 245);
+      const begin = () => {
+        musicOn = true;
+        musicBtn.textContent = '🎶';
+        musicBtn.setAttribute('aria-label', 'ปิดเพลงพื้นหลัง');
+        musicBtn.title = 'Background music: on';
+        showBubble(window.innerWidth / 2, 118, 'เปิดเพลงแล้ว 🎶');
+        if (musicTimer) clearInterval(musicTimer);
+        musicTick();
+        musicTimer = setInterval(musicTick, 245);
+      };
+
+      if (musicContext.state === 'suspended') {
+        musicContext.resume().then(begin).catch(begin);
+      } else {
+        begin();
+      }
     }
 
     function stopBackgroundMusic() {
