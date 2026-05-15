@@ -758,6 +758,7 @@
     let lastEvadePraise = 0;
     let currentMood = moods[0];
     let nextMoodTime = performance.now() + 18000;
+    let nextRandomMeowTime = performance.now() + 7000 + Math.random() * 8000;
     let unlocked = new Set();
 
     const pointer = { x: window.innerWidth * 0.67, y: window.innerHeight * 0.33 };
@@ -912,8 +913,13 @@
           osc.stop(startTime + 0.36);
         }
         if (type === 'meow') {
-          playMeow(ctx.currentTime, 820, 520, 360);
-          playMeow(ctx.currentTime + 0.38, 760, 500, 340);
+          playMeow(ctx.currentTime, 650, 430, 280);
+          playMeow(ctx.currentTime + 0.38, 610, 400, 260);
+          return;
+        }
+        if (type === 'kitten') {
+          playMeow(ctx.currentTime, 980, 720, 520);
+          playMeow(ctx.currentTime + 0.32, 1060, 760, 540);
           return;
         }
         const oscillator = ctx.createOscillator();
@@ -929,6 +935,19 @@
         oscillator.start();
         oscillator.stop(ctx.currentTime + 0.22);
       } catch (error) {}
+    }
+
+    function triggerRandomCatMeow(now, isSleeping) {
+      if (muted || isSleeping || now < nextRandomMeowTime) return;
+      const fromSmallCat = Math.random() > 0.48;
+      if (fromSmallCat) {
+        tinySound('kitten');
+        showBubble(small.x, small.y - 46, Math.random() > 0.5 ? 'เหมียว?' : 'เมี๊ยว เมี๊ยว');
+      } else {
+        tinySound('meow');
+        showBubble(chubby.x, chubby.y - 182, Math.random() > 0.5 ? 'เหมียววว~' : 'meow meow');
+      }
+      nextRandomMeowTime = now + 8500 + Math.random() * 11500;
     }
 
     function showBubble(x, y, text) {
@@ -1081,6 +1100,7 @@
         small.direction = Math.atan2(small.vy, small.vx || 0.001) * 180 / Math.PI;
 
         const isSleeping = now - lastSmallMoveTime > 5000;
+        triggerRandomCatMeow(now, isSleeping);
         const center = { x: window.innerWidth / 2, y: window.innerHeight * 0.64 };
         const d = dist(small, chubby);
         const angle = angleBetween(chubby, small);
@@ -1181,6 +1201,7 @@
         stopBackgroundMusic();
       }
       nextMoodTime = performance.now() + 18000;
+      nextRandomMeowTime = performance.now() + 7000 + Math.random() * 8000;
       moodPill.textContent = currentMood.label;
       unlocked.clear();
       app.querySelectorAll('.bubble, .achievement').forEach(el => el.remove());
